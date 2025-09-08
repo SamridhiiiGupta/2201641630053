@@ -2,6 +2,10 @@
 
 A production-grade HTTP URL shortener microservice implementing:
 
+<p align="center">
+  <img src="Working Demo1.png" alt="Homepage" width="100%"/>
+</p>
+
 - Mandatory logging middleware (file-based JSONL at `logs/requests.log`).
 - Short link creation with optional custom shortcode and validity (minutes).
 - Global uniqueness of shortcodes, proper redirects, and expiry handling.
@@ -46,11 +50,9 @@ A production-grade HTTP URL shortener microservice implementing:
 
 ### Screenshots
 
-Place your screenshot image file in the `docs/` folder and reference it below. Example:
-
-```md
-![Working demo](docs/screenshot.png)
-```
+<p align="center">
+  <img src="Working Demo 2.png" alt="Stats Screenshot" width="80%"/>
+</p>
 
 Current placeholders (replace these files with your real screenshots):
 
