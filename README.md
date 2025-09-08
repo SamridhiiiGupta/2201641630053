@@ -3,7 +3,7 @@
 A production-grade HTTP URL shortener microservice implementing:
 
 <p align="center">
-  <img src="Working Demo 1.png" alt="Homepage" width="100%"/>
+  <img src="Working Demo 2.png" alt="Homepage" width="100%"/>
 </p>
 
 - Mandatory logging middleware (file-based JSONL at `logs/requests.log`).
@@ -51,7 +51,7 @@ A production-grade HTTP URL shortener microservice implementing:
 ### Screenshots
 
 <p align="center">
-  <img src="Working Demo 2.png" alt="Stats Screenshot" width="80%"/>
+  <img src="Working Demo 1.png" alt="Stats Screenshot" width="80%"/>
 </p>
 
 
