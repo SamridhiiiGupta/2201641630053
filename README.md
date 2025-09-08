@@ -52,9 +52,11 @@ Place your screenshot image file in the `docs/` folder and reference it below. E
 ![Working demo](docs/screenshot.png)
 ```
 
-Current placeholder (replace `docs/screenshot.png` with your file path if different):
+Current placeholders (replace these files with your real screenshots):
 
-![Working demo](docs/screenshot.png)
+![Working redirect](docs/screenshot-redirect.png)
+
+![Stats output](docs/screenshot-stats.png)
 
 
 
