@@ -1,11 +1,21 @@
 const express = require('express');
-const { customAlphabet, nanoid } = require('nanoid');
+let customAlphabet;
+// Lazy-load nanoid via dynamic import to support ESM module from CommonJS
+async function loadNanoid() {
+  if (!customAlphabet) {
+    const mod = await import('nanoid');
+    customAlphabet = mod.customAlphabet;
+  }
+}
 const dayjs = require('dayjs');
 const { db } = require('../db/connection');
 
 const router = express.Router();
 const shortAlphabet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const generateShortcode = customAlphabet(shortAlphabet, 6);
+let generateShortcode;
+loadNanoid().then(() => {
+  generateShortcode = customAlphabet(shortAlphabet, 6);
+});
 
 function isValidUrl(url) {
   try {
@@ -16,7 +26,11 @@ function isValidUrl(url) {
   }
 }
 
-router.post('/shorturls', (req, res) => {
+router.post('/shorturls', async (req, res) => {
+  await loadNanoid();
+  if (!generateShortcode) {
+    generateShortcode = customAlphabet(shortAlphabet, 6);
+  }
   const { url, validity, shortcode } = req.body || {};
 
   if (!url || !isValidUrl(url)) {
