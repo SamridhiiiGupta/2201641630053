@@ -1,4 +1,4 @@
-# System Design (Interactive)
+# System Design
 
 > A lightweight, dependable, and observable URL shortener service designed for clarity and easy evolution.
 
@@ -34,6 +34,24 @@ sequenceDiagram
   DB-->>E: result/row(s)
   E-->>C: HTTP Response (JSON/302)
   E->>LG: log finish (status, duration)
+```
+
+</details>
+
+<details>
+<summary><b>Components (static view)</b></summary>
+
+```mermaid
+graph TD
+  subgraph App
+    R[Router /shorturls, /:code, /stats]
+    M[Middleware: helmet, cors, json, logger]
+    H[Handlers: create, redirect, stats]
+  end
+  R --> H
+  M --> R
+  H --> DB[(SQLite via better-sqlite3)]
+  M --> LOG[(JSONL Logger)]
 ```
 
 </details>
@@ -132,3 +150,57 @@ Rationale: normalized write model with value-FK keeps queries simple; future rol
 - OpenAPI/Swagger docs; minimal web UI.
 - Geo enrichment via edge headers/MaxMind.
 - Dockerfile + one-click deploy; CI/CD with health checks and log shipping.
+
+---
+
+## 11) Deployment Options
+
+```mermaid
+flowchart TB
+  subgraph Local
+    L[Node.js + SQLite file]
+  end
+  subgraph Cloud (future)
+    P[Node.js + Postgres]
+    C[CDN/Edge Redirect]
+    R[(Redis Cache)]
+  end
+  L -- migrate schema --> P
+  P -- hot path lookups --> R
+  C -- cache shortcodes --> P
+```
+
+<details>
+<summary><b>Trade-offs: SQLite vs Postgres (decision matrix)</b></summary>
+
+| Criterion | SQLite (current) | Postgres (future) |
+|---|---|---|
+| Ops | Zero-ops | Managed service
+| Concurrency | Good with WAL (single node) | Horizontal scale
+| Latency | Very low | Low (network hop)
+| Migrations | Simple | Strong tooling
+| Cost | Minimal | Varies by plan
+
+</details>
+
+## 12) Non-Functional Requirements (Checklist)
+
+- [x] Availability adequate for single-instance dev setup
+- [x] Data consistency on shortcode uniqueness
+- [x] Observability via JSONL and stats endpoint
+- [x] Security headers and input validation
+- [ ] Rate limiting (planned)
+- [ ] Auth/API keys (planned)
+
+## 13) Risks & Mitigations
+
+- Collisions on random codes → DB UNIQUE constraint + retry
+- Log file growth → rotate/ship logs (future)
+- Hot key lookups → add in-memory/Redis cache (future)
+- Single-node limits → migrate to Postgres and scale out (future)
+
+## 14) Glossary
+
+- Shortcode: unique token mapping to original URL
+- JSONL: JSON Lines; one JSON object per line
+- WAL: Write-Ahead Logging, improves concurrency in SQLite
