@@ -1,10 +1,28 @@
 ## 🚀 Affordmed URL Shortener
 
 <p align="center">
+  <a href="https://github.com/SamridhiiiGupta/2201641630053"><img src="https://img.shields.io/badge/Repo-Affordmed%20URL%20Shortener-1abc9c?style=for-the-badge" alt="repo badge"/></a>
+  <img src="https://img.shields.io/badge/Node.js-20.x-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="node badge"/>
+  <img src="https://img.shields.io/badge/Express-5.x-000000?style=for-the-badge&logo=express&logoColor=white" alt="express badge"/>
+  <img src="https://img.shields.io/badge/SQLite-better--sqlite3-044a64?style=for-the-badge&logo=sqlite&logoColor=white" alt="sqlite badge"/>
+</p>
+
+<p align="center">
   <img src="Working Demo 2.png" alt="Homepage" width="100%"/>
 </p>
 
 Build once, share everywhere. This microservice creates globally unique short links, handles safe redirects, and tracks basic analytics — all with a clean API, robust validations, and a lightweight SQLite database.
+
+### 🔗 Quick Links
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Screenshots](#️-screenshots)
+- [Project Structure](#️-project-structure)
+- [How to Run](#️-how-to-run)
+- [API (Quick Reference)](#-api-quick-reference)
+- [Example Commands](#-example-commands-powershell-friendly)
+- [Future Enhancements](#-future-enhancements)
+- [Acknowledgments](#-acknowledgments)
 
 ### ✨ Features
 - **Mandatory Logging**: JSON lines written to `logs/requests.log` for every request.
@@ -29,6 +47,8 @@ Build once, share everywhere. This microservice creates globally unique short li
 <p align="center">
   <img src="Working Demo 2.png" alt="Homepage" width="90%"/>
 </p>
+
+> Tip: You can also add your own screenshots in `docs/` and reference them below for richer context.
 
 ### 🗺️ Project Structure
 ```
@@ -57,6 +77,15 @@ Build once, share everywhere. This microservice creates globally unique short li
    ```
 3. Health check: open `http://localhost:3000/health` → `{ "status": "ok" }`
 
+<details>
+<summary><strong>Optional: Run with Node only (no dev reload)</strong></summary>
+
+```bash
+npm run start
+```
+
+</details>
+
 ### 📡 API (Quick Reference)
 - **Create Short URL**
   - Method: POST
@@ -76,6 +105,16 @@ Build once, share everywhere. This microservice creates globally unique short li
 - **Retrieve Stats**
   - GET `/shorturls/:code/stats` → JSON with totals and recent events
 
+<details>
+<summary><strong>Full error handling matrix</strong></summary>
+
+- 400 Bad Request: invalid/missing `url` or bad `shortcode` format
+- 409 Conflict: custom `shortcode` already exists
+- 404 Not Found: unknown shortcode
+- 410 Gone: known shortcode but expired
+
+</details>
+
 ### 🧪 Example Commands (PowerShell friendly)
 ```powershell
 $body = @{ url = 'https://example.com'; validity = 5 } | ConvertTo-Json
@@ -84,6 +123,19 @@ $resp.shortLink
 $code = ($resp.shortLink.Split('/')[-1])
 Invoke-RestMethod -Uri ("http://localhost:3000/shorturls/{0}/stats" -f $code)
 ```
+
+<details>
+<summary><strong>cURL (Linux/macOS) equivalents</strong></summary>
+
+```bash
+curl -s -X POST http://localhost:3000/shorturls \
+  -H 'Content-Type: application/json' \
+  -d '{"url":"https://example.com","validity":5}'
+
+curl -s http://localhost:3000/shorturls/<code>/stats
+```
+
+</details>
 
 ### 🔒 Notes
 - SQLite DB file auto-creates (`db.sqlite`).
@@ -96,6 +148,13 @@ Invoke-RestMethod -Uri ("http://localhost:3000/shorturls/{0}/stats" -f $code)
 - Batch link creation and CSV import/export.
 - Pagination for stats; filters on date range.
 - OpenAPI/Swagger docs and a minimal UI.
+
+### ✅ Status Checklist
+- [x] Core URL shortening with optional custom codes
+- [x] Redirect with expiry handling
+- [x] Basic analytics + recent events
+- [x] Mandatory request logging middleware
+- [x] GitHub repo and documentation
 
 ### 🙏 Acknowledgments
 - Affordmed evaluation brief for clear specs and constraints.
