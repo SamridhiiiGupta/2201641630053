@@ -191,4 +191,4 @@ Set `PORT=4000` in `.env` or when starting the process.
 
 ---
 
-Made with care for reliability and clarity. Contributions and suggestions are welcome!
+Made with care for reliability and clarity.
