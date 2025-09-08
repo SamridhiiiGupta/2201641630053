@@ -170,6 +170,14 @@ Set `PORT=4000` in `.env` or when starting the process.
 - WAL/SHM files are gitignored.
 - Request logs are appended to `logs/requests.log`.
 
+### 🧩 System Design
+- Read the full document: [`docs/SystemDesign.md`](docs/SystemDesign.md)
+- Screenshot placeholder (replace with your capture):
+
+<p align="center">
+  <img src="docs/system-design-screenshot.png" alt="System Design Screenshot" width="90%"/>
+</p>
+
 ### 🚧 Future Enhancements
 - Rate limiting and API key support.
 - Click analytics enrichment (IP to geo via MaxMind/Cloudflare headers).
