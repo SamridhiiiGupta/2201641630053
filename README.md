@@ -50,6 +50,13 @@ Build once, share everywhere. This microservice creates globally unique short li
 
 > Tip: You can also add your own screenshots in `docs/` and reference them below for richer context.
 
+### ⚡ TL;DR (60‑second Quickstart)
+```bash
+git clone https://github.com/SamridhiiiGupta/2201641630053.git
+cd 2201641630053
+npm i && npm run dev
+```
+
 ### 🗺️ Project Structure
 ```
 .
@@ -137,6 +144,27 @@ curl -s http://localhost:3000/shorturls/<code>/stats
 
 </details>
 
+### 🧠 Why this design?
+- **SQLite + better-sqlite3**: Embedded, zero-ops, safe concurrent writes (WAL).
+- **Unique shortcodes**: DB constraint gives global uniqueness, even on races.
+- **Logging middleware**: JSONL → easy to ship to ELK later.
+- **ESM‑only nanoid**: Dynamically imported to interop with CommonJS.
+
+### ❓ FAQ
+<details>
+<summary>How do I change the port?</summary>
+
+Set `PORT=4000` in `.env` or when starting the process.
+
+</details>
+
+<details>
+<summary>Where are logs written?</summary>
+
+`logs/requests.log` in JSON lines format (gitignored).
+
+</details>
+
 ### 🔒 Notes
 - SQLite DB file auto-creates (`db.sqlite`).
 - WAL/SHM files are gitignored.
@@ -148,6 +176,7 @@ curl -s http://localhost:3000/shorturls/<code>/stats
 - Batch link creation and CSV import/export.
 - Pagination for stats; filters on date range.
 - OpenAPI/Swagger docs and a minimal UI.
+ - Dockerfile + one‑click deploy template (Render/Fly/Heroku‑like)
 
 ### ✅ Status Checklist
 - [x] Core URL shortening with optional custom codes
@@ -162,4 +191,4 @@ curl -s http://localhost:3000/shorturls/<code>/stats
 
 ---
 
-Made with care for reliability and clarity. 
+Made with care for reliability and clarity. Contributions and suggestions are welcome!
