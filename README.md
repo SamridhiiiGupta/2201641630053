@@ -44,4 +44,17 @@ A production-grade HTTP URL shortener microservice implementing:
 - SQLite database file: `db.sqlite` (auto-created).
 - Logs stored in `logs/requests.log` in JSON lines format.
 
+### Screenshots
+
+Place your screenshot image file in the `docs/` folder and reference it below. Example:
+
+```md
+![Working demo](docs/screenshot.png)
+```
+
+Current placeholder (replace `docs/screenshot.png` with your file path if different):
+
+![Working demo](docs/screenshot.png)
+
+
 
