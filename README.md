@@ -172,10 +172,13 @@ Set `PORT=4000` in `.env` or when starting the process.
 
 ### 🧩 System Design
 - Read the full document: [`docs/SystemDesign.md`](docs/SystemDesign.md)
-- Screenshot placeholder (replace with your capture):
 
 <p align="center">
-  <img src="docs/system-design-screenshot.png" alt="System Design Screenshot" width="90%"/>
+  <img src="system design ss 1.png" alt="Homepage" width="100%"/>
+</p>
+
+<p align="center">
+  <img src="system design ss 2.png" alt="Homepage" width="100%"/>
 </p>
 
 ### 🚧 Future Enhancements
