@@ -1,5 +1,29 @@
 # System Design
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Architecture-Clean%20%26%20Observable-6c5ce7?style=for-the-badge" alt="arch badge"/>
+  <img src="https://img.shields.io/badge/Storage-SQLite%20(WAL)-0984e3?style=for-the-badge&logo=sqlite&logoColor=white" alt="sqlite badge"/>
+  <img src="https://img.shields.io/badge/API-Express-2ecc71?style=for-the-badge&logo=express&logoColor=white" alt="express badge"/>
+</p>
+
+### Quick Nav
+- [Architecture Overview](#1-architecture-overview)
+- [Data Model](#2-data-model)
+- [Key Decisions](#3-key-decisions--justifications)
+- [API Surface](#4-api-surface)
+- [Security & Resilience](#5-security--resilience)
+- [Observability](#6-observability)
+- [Scalability & Evolution](#7-scalability--evolution)
+- [Maintainability](#8-maintainability)
+- [Assumptions](#9-assumptions)
+- [Future Enhancements](#10-future-enhancements)
+- [Deployment Options](#11-deployment-options)
+- [NFRs](#12-non-functional-requirements-checklist)
+- [Risks & Mitigations](#13-risks--mitigations)
+- [Glossary](#14-glossary)
+
+> Tip: Click the collapsible sections for deeper dives and alternative views.
+
 > A lightweight, dependable, and observable URL shortener service designed for clarity and easy evolution.
 
 ## 1) Architecture Overview
@@ -56,6 +80,21 @@ graph TD
 
 </details>
 
+<details>
+<summary><b>Shortcode lifecycle (state diagram)</b></summary>
+
+```mermaid
+stateDiagram-v2
+  [*] --> Created: POST /shorturls
+  Created --> Active: stored in DB
+  Active --> Expired: now > expires_at
+  Active --> Redirected: GET /:code
+  Redirected --> Active
+  Expired --> [*]
+```
+
+</details>
+
 ## 2) Data Model
 
 | Table | Columns |
@@ -87,6 +126,16 @@ classDiagram
 
 Rationale: normalized write model with value-FK keeps queries simple; future rollups/materialized views can accelerate reporting.
 
+<details>
+<summary><b>Entity responsibilities</b></summary>
+
+| Entity | Responsibility |
+|---|---|
+| short_urls | Single source of truth for mapping; enforces uniqueness and expiry semantics |
+| click_events | Immutable audit of access patterns for analytics and debugging |
+
+</details>
+
 ## 3) Key Decisions & Justifications
 
 - SQLite + better-sqlite3: zero-ops, great local/dev experience, WAL handles concurrent access in single-node deployments.
@@ -113,6 +162,26 @@ Rationale: normalized write model with value-FK keeps queries simple; future rol
 
 </details>
 
+<details>
+<summary><b>Example payloads</b></summary>
+
+```json
+// Create
+{ "url": "https://example.com", "validity": 60, "shortcode": "afford2025" }
+
+// Stats response (shape)
+{
+  "shortcode": "afford2025",
+  "originalUrl": "https://example.com",
+  "createdAt": "2025-01-01T00:00:00Z",
+  "expiry": "2025-01-01T01:00:00Z",
+  "clicks": 12,
+  "recent": [ { "clicked_at": "...", "referer": "..." } ]
+}
+```
+
+</details>
+
 ## 5) Security & Resilience
 
 - Validation at boundaries (URL, shortcode regex), JSON body size limits.
@@ -131,6 +200,18 @@ Rationale: normalized write model with value-FK keeps queries simple; future rol
 - Vertical scale first; WAL supports moderate concurrency.
 - Horizontal path: migrate to Postgres (same constraints), add caching (in-memory/Redis) for hot shortcodes, CDN/edge redirects for lowest latency.
 - Periodic rollups/materialized views for reporting at scale.
+
+<details>
+<summary><b>Performance targets (initial)</b></summary>
+
+| KPI | Target |
+|---|---|
+| p95 create latency | < 100 ms |
+| p95 redirect latency | < 20 ms (in-memory DB read) |
+| p95 stats latency | < 120 ms |
+| 1-day data retention | Unlimited (local dev); rotate logs as needed |
+
+</details>
 
 ## 8) Maintainability
 
@@ -152,6 +233,17 @@ Rationale: normalized write model with value-FK keeps queries simple; future rol
 - Dockerfile + one-click deploy; CI/CD with health checks and log shipping.
 
 ---
+
+<details>
+<summary><b>Deployment checklist</b></summary>
+
+- [ ] Create .env with PORT and any CORS settings
+- [ ] Build container image (future)
+- [ ] Configure health checks (/health)
+- [ ] Log shipping to ELK/Loki (future)
+- [ ] Set up backups/retention for DB (or managed Postgres)
+
+</details>
 
 ## 11) Deployment Options
 
