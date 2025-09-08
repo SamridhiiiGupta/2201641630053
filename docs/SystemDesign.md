@@ -252,14 +252,14 @@ flowchart TB
   subgraph Local
     L[Node.js + SQLite file]
   end
-  subgraph Cloud (future)
+  subgraph Cloud_future["Cloud (future)"]
     P[Node.js + Postgres]
-    C[CDN/Edge Redirect]
+    C[CDN / Edge Redirect]
     R[(Redis Cache)]
   end
-  L -- migrate schema --> P
-  P -- hot path lookups --> R
-  C -- cache shortcodes --> P
+  L -->|migrate schema| P
+  P -->|hot path lookups| R
+  C -->|cache shortcodes| P
 ```
 
 <details>
