@@ -162,4 +162,4 @@ curl -s http://localhost:3000/shorturls/<code>/stats
 
 ---
 
-Made with care for reliability and clarity. Contributions and suggestions are welcome!
+Made with care for reliability and clarity. 
