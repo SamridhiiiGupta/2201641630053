@@ -1,0 +1,13 @@
+node_modules/
+frontend/node_modules/
+frontend/dist/
+logs/
+*.log
+db.sqlite
+db.sqlite-shm
+db.sqlite-wal
+.env
+.DS_Store
+venv/
+*.pyc
+dist/
