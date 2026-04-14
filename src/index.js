@@ -2,6 +2,7 @@ const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const rateLimit = require('express-rate-limit');
 const { loggingMiddleware } = require('./middlewares/logger');
 const shortUrlsRouter = require('./routes/shorturls');
@@ -13,7 +14,6 @@ app.use(cors());
 app.use(express.json({ limit: '100kb' }));
 app.use(loggingMiddleware);
 
-// Rate limiting for URL creation
 const createLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 50,
@@ -21,25 +21,25 @@ const createLimiter = rateLimit({
 });
 app.use('/api/shorturls', createLimiter);
 
-// Health check
 app.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }));
 
-// API + redirect routes
 app.use('/', shortUrlsRouter);
 
-// Serve React frontend (production build)
+// Serve React build in production (skip if dist doesn't exist yet)
 const distPath = path.join(__dirname, '..', 'frontend', 'dist');
-app.use(express.static(distPath));
-app.get('(.*)', (req, res) => {
-  res.sendFile(path.join(distPath, 'index.html'), (err) => {
-    if (err) res.status(404).json({ message: 'Not found' });
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+  app.use((req, res, next) => {
+    if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/health')) {
+      res.sendFile(path.join(distPath, 'index.html'));
+    } else {
+      next();
+    }
   });
-});
+}
 
-// 404 handler
 app.use((req, res) => res.status(404).json({ message: 'Not found' }));
 
-// Error handler
 app.use((err, req, res, _next) => {
   console.error('Unhandled error', err);
   res.status(500).json({ message: 'Internal Server Error' });
