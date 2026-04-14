@@ -6,11 +6,45 @@ import { useToast } from './hooks/useToast'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 
+function Canvas() {
+  return (
+    <div className="canvas">
+      <div className="canvas-grid" />
+      <div className="canvas-orb canvas-orb-1" />
+      <div className="canvas-orb canvas-orb-2" />
+      <div className="canvas-orb canvas-orb-3" />
+      <div className="canvas-vignette" />
+    </div>
+  )
+}
+
+function NotFound() {
+  return (
+    <div style={{ textAlign: 'center', padding: '120px 20px', animation: 'fade-up 0.5s ease both' }}>
+      <div style={{
+        fontFamily: 'var(--font-mono)',
+        fontSize: 72,
+        fontWeight: 700,
+        letterSpacing: '-0.04em',
+        color: 'var(--rim-bright)',
+        marginBottom: 16,
+      }}>404</div>
+      <p style={{ color: 'var(--ink-3)', marginBottom: 32, fontSize: 15 }}>
+        This page — or short link — doesn't exist.
+      </p>
+      <a href="/">
+        <button className="btn btn-primary">← Back home</button>
+      </a>
+    </div>
+  )
+}
+
 export default function App() {
-  const { toasts, toast } = useToast()
+  const { toasts, toast, removeToast } = useToast()
 
   return (
     <>
+      <Canvas />
       <Navbar />
       <main>
         <Routes>
@@ -19,20 +53,7 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-      <ToastContainer toasts={toasts} />
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </>
-  )
-}
-
-function NotFound() {
-  return (
-    <div style={{ textAlign: 'center', padding: '120px 20px' }}>
-      <div style={{ fontSize: 64, marginBottom: 24 }}>✂</div>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 48, marginBottom: 12, letterSpacing: '-0.02em' }}>404</h1>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: 32 }}>This page — or short link — doesn't exist.</p>
-      <a href="/">
-        <button className="btn-primary">Back to home</button>
-      </a>
-    </div>
   )
 }

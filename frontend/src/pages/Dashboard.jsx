@@ -5,162 +5,237 @@ import { ShortenerForm } from '../components/ShortenerForm'
 
 function timeAgo(iso) {
   const diff = Date.now() - new Date(iso).getTime()
-  const mins = Math.floor(diff / 60000)
-  if (mins < 1) return 'just now'
-  if (mins < 60) return `${mins}m ago`
-  const hrs = Math.floor(mins / 60)
-  if (hrs < 24) return `${hrs}h ago`
-  return `${Math.floor(hrs / 24)}d ago`
+  const m = Math.floor(diff / 60000)
+  if (m < 1) return 'just now'
+  if (m < 60) return `${m}m ago`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}h ago`
+  return `${Math.floor(h / 24)}d ago`
 }
 
-function getFavicon(url) {
-  try { return new URL(url).hostname } catch { return '' }
+function SkeletonCard() {
+  return (
+    <div style={{
+      background: 'rgba(255,255,255,0.02)',
+      border: '1px solid var(--rim)',
+      borderRadius: 14,
+      padding: '18px 20px',
+      display: 'flex', alignItems: 'center', gap: 16,
+    }}>
+      <div className="skeleton" style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0 }} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="skeleton" style={{ height: 14, width: '40%', borderRadius: 4 }} />
+        <div className="skeleton" style={{ height: 12, width: '70%', borderRadius: 4 }} />
+      </div>
+      <div className="skeleton" style={{ width: 48, height: 32, borderRadius: 8 }} />
+    </div>
+  )
 }
 
-function LinkCard({ link, onStats, onDelete, host }) {
+function StatSummary({ links }) {
+  const now = new Date()
+  const active = links.filter(l => !l.expires_at || new Date(l.expires_at) > now).length
+  const totalClicks = links.reduce((s, l) => s + (l.clicks || 0), 0)
+  const custom = links.filter(l => l.is_custom).length
+
+  const stats = [
+    { label: 'Total links', value: links.length, color: 'var(--blue-bright)' },
+    { label: 'Active', value: active, color: 'var(--green)' },
+    { label: 'Total clicks', value: totalClicks.toLocaleString(), color: 'var(--violet)' },
+    { label: 'Custom aliases', value: custom, color: 'var(--cyan)' },
+  ]
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, marginBottom: 28 }}>
+      {stats.map((s, i) => (
+        <div key={s.label} style={{
+          background: 'rgba(255,255,255,0.025)',
+          border: '1px solid var(--rim)',
+          borderRadius: 12,
+          padding: '14px 18px',
+          animation: `fade-up 0.4s ${i * 0.06}s ease both`,
+        }}>
+          <p style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-3)', marginBottom: 6, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{s.label}</p>
+          <p style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: 24, letterSpacing: '-0.03em', color: s.color }}>{s.value}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function LinkRow({ link, host, onStats, onDelete }) {
   const shortUrl = `${host}/${link.shortcode}`
   const isExpired = link.expires_at && new Date(link.expires_at) < new Date()
   const [deleting, setDeleting] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  function copy() {
+  function copy(e) {
+    e.stopPropagation()
     navigator.clipboard.writeText(shortUrl)
     setCopied(true)
-    setTimeout(() => setCopied(false), 1500)
+    setTimeout(() => setCopied(false), 1800)
   }
 
-  async function handleDelete() {
+  async function handleDelete(e) {
+    e.stopPropagation()
     if (!confirm('Delete this link?')) return
     setDeleting(true)
     await onDelete(link.shortcode)
   }
 
+  const favicon = (() => {
+    try { return new URL(link.original_url).hostname } catch { return '' }
+  })()
+
   return (
-    <div style={{
-      background: 'var(--bg-card)',
-      border: `1px solid ${isExpired ? 'rgba(255,77,109,0.15)' : 'var(--border)'}`,
-      borderRadius: 'var(--radius)',
-      padding: '18px 20px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: 16,
-      transition: 'border-color 0.2s',
-      opacity: deleting ? 0.5 : 1,
-    }}>
-      {/* Favicon + status dot */}
+    <div
+      onClick={() => onStats(link.shortcode)}
+      style={{
+        background: 'rgba(255,255,255,0.02)',
+        border: `1px solid ${isExpired ? 'rgba(248,113,113,0.12)' : 'var(--rim)'}`,
+        borderRadius: 14,
+        padding: '16px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 14,
+        opacity: deleting ? 0.4 : 1,
+        transition: 'border-color 0.15s, background 0.15s, opacity 0.3s',
+        cursor: 'pointer',
+        animation: 'fade-up 0.35s ease both',
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.background = 'rgba(255,255,255,0.035)'
+        e.currentTarget.style.borderColor = isExpired ? 'rgba(248,113,113,0.2)' : 'var(--rim-bright)'
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.background = 'rgba(255,255,255,0.02)'
+        e.currentTarget.style.borderColor = isExpired ? 'rgba(248,113,113,0.12)' : 'var(--rim)'
+      }}
+    >
+      {/* Favicon + status */}
       <div style={{ position: 'relative', flexShrink: 0 }}>
         <div style={{
-          width: 40, height: 40,
-          background: 'var(--bg-elevated)',
+          width: 38, height: 38,
+          background: 'var(--raised)',
           borderRadius: 10,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 18, overflow: 'hidden',
+          overflow: 'hidden', border: '1px solid var(--rim)',
         }}>
           <img
-            src={`https://www.google.com/s2/favicons?domain=${getFavicon(link.original_url)}&sz=32`}
-            alt="" width={20} height={20}
-            onError={e => { e.target.style.display = 'none' }}
+            src={`https://www.google.com/s2/favicons?domain=${favicon}&sz=32`}
+            alt=""
+            width={18} height={18}
+            onError={e => e.target.style.display = 'none'}
           />
         </div>
         <div style={{
           position: 'absolute', bottom: -2, right: -2,
-          width: 10, height: 10,
-          borderRadius: '50%',
-          background: isExpired ? 'var(--danger)' : 'var(--success)',
-          border: '2px solid var(--bg-card)',
+          width: 9, height: 9, borderRadius: '50%',
+          background: isExpired ? 'var(--red)' : 'var(--green)',
+          border: '2px solid var(--deep)',
+          boxShadow: `0 0 6px ${isExpired ? 'var(--red)' : 'var(--green)'}`,
         }} />
       </div>
 
-      {/* URL info */}
+      {/* Link info */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
           <span style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--font-mono)',
             fontWeight: 600,
-            fontSize: 15,
-            color: 'var(--accent)',
-          }}>
-            /{link.shortcode}
-          </span>
+            fontSize: 14,
+            color: 'var(--blue-bright)',
+            letterSpacing: '-0.01em',
+          }}>/{link.shortcode}</span>
           {link.title && (
-            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>— {link.title}</span>
+            <span style={{ fontSize: 13, color: 'var(--ink-2)' }}>— {link.title}</span>
           )}
-          {link.is_custom ? (
-            <span className="badge badge-accent" style={{ fontSize: 11 }}>custom</span>
-          ) : null}
+          {link.is_custom && <span className="badge badge-violet" style={{ fontSize: 10 }}>custom</span>}
+          {isExpired && <span className="badge badge-red" style={{ fontSize: 10 }}>expired</span>}
         </div>
-        <p className="truncate" style={{ fontSize: 13, color: 'var(--text-muted)', maxWidth: 360 }}>
+        <p className="truncate" style={{ fontSize: 12, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)', maxWidth: 340 }}>
           {link.original_url}
         </p>
-        <div style={{ display: 'flex', gap: 12, marginTop: 4, fontSize: 12, color: 'var(--text-muted)' }}>
-          <span>{timeAgo(link.created_at)}</span>
-          {link.expires_at && (
-            <span style={{ color: isExpired ? 'var(--danger)' : 'var(--text-muted)' }}>
-              {isExpired ? 'Expired' : `Expires ${new Date(link.expires_at).toLocaleDateString()}`}
-            </span>
+        <p style={{ fontSize: 11, color: 'var(--ink-4)', marginTop: 3, fontFamily: 'var(--font-mono)' }}>
+          {timeAgo(link.created_at)}
+          {link.expires_at && !isExpired && (
+            <span style={{ marginLeft: 10 }}>· expires {new Date(link.expires_at).toLocaleDateString()}</span>
           )}
-        </div>
+        </p>
       </div>
 
-      {/* Clicks */}
-      <div style={{ textAlign: 'center', flexShrink: 0, minWidth: 50 }}>
-        <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20 }}>
-          {(link.clicks || 0).toLocaleString()}
-        </p>
-        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>clicks</p>
+      {/* Click count */}
+      <div style={{ textAlign: 'right', flexShrink: 0, minWidth: 52 }}>
+        <p style={{
+          fontFamily: 'var(--font-sans)',
+          fontWeight: 700,
+          fontSize: 20,
+          letterSpacing: '-0.03em',
+          color: 'var(--ink)',
+          lineHeight: 1,
+        }}>{(link.clicks || 0).toLocaleString()}</p>
+        <p style={{ fontSize: 10, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>CLICKS</p>
       </div>
 
       {/* Actions */}
-      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-        <button
-          onClick={copy}
-          title="Copy link"
-          style={{
-            background: copied ? 'var(--accent-dim)' : 'var(--bg-elevated)',
-            border: '1px solid var(--border)',
-            borderRadius: 8,
-            width: 34, height: 34,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', fontSize: 15,
-            transition: 'all 0.15s',
-            color: copied ? 'var(--accent)' : 'var(--text-secondary)',
-          }}
-        >{copied ? '✓' : '⎘'}</button>
+      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+        <ActionBtn onClick={copy} title={copied ? 'Copied!' : 'Copy link'} active={copied} activeColor="var(--green)">
+          {copied ? '✓' : (
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
+              <path d="M2 10V2h8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          )}
+        </ActionBtn>
 
-        <button
-          onClick={() => onStats(link.shortcode)}
-          title="View analytics"
-          style={{
-            background: 'var(--bg-elevated)',
-            border: '1px solid var(--border)',
-            borderRadius: 8,
-            width: 34, height: 34,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', fontSize: 15, color: 'var(--text-secondary)',
-            transition: 'all 0.15s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
-        >📊</button>
+        <ActionBtn onClick={() => onStats(link.shortcode)} title="Analytics" hoverColor="var(--blue)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 10l3-3 2 2 3-4 2 2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </ActionBtn>
 
-        <button
-          onClick={handleDelete}
-          disabled={deleting}
-          title="Delete link"
-          style={{
-            background: 'var(--bg-elevated)',
-            border: '1px solid var(--border)',
-            borderRadius: 8,
-            width: 34, height: 34,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', fontSize: 14, color: 'var(--text-muted)',
-            transition: 'all 0.15s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--danger)'; e.currentTarget.style.color = 'var(--danger)' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
-        >{deleting ? '…' : '🗑'}</button>
+        <ActionBtn onClick={handleDelete} title="Delete" hoverColor="var(--red)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 4h10M5 4V2h4v2M11 4l-1 8H4L3 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </ActionBtn>
       </div>
     </div>
+  )
+}
+
+function ActionBtn({ onClick, title, children, active, activeColor, hoverColor }) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      style={{
+        width: 32, height: 32,
+        background: active ? `${activeColor}18` : 'var(--raised)',
+        border: `1px solid ${active ? `${activeColor}30` : 'var(--rim)'}`,
+        borderRadius: 8,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: active ? activeColor : 'var(--ink-3)',
+        cursor: 'pointer',
+        transition: 'all 0.15s',
+        fontSize: 13,
+        flexShrink: 0,
+      }}
+      onMouseEnter={e => {
+        if (!active) {
+          e.currentTarget.style.color = hoverColor || 'var(--ink)'
+          e.currentTarget.style.borderColor = hoverColor ? `${hoverColor}30` : 'var(--rim-bright)'
+          e.currentTarget.style.background = hoverColor ? `${hoverColor}10` : 'var(--overlay)'
+        }
+      }}
+      onMouseLeave={e => {
+        if (!active) {
+          e.currentTarget.style.color = 'var(--ink-3)'
+          e.currentTarget.style.borderColor = 'var(--rim)'
+          e.currentTarget.style.background = 'var(--raised)'
+        }
+      }}
+    >{children}</button>
   )
 }
 
@@ -176,8 +251,7 @@ export default function Dashboard({ toast }) {
   const fetchLinks = useCallback(async () => {
     setLoading(true)
     try {
-      const data = await api.listShortUrls()
-      setLinks(data)
+      setLinks(await api.listShortUrls())
     } catch {
       toast('Failed to load links', 'error')
     } finally {
@@ -190,157 +264,171 @@ export default function Dashboard({ toast }) {
   async function handleDelete(code) {
     try {
       await api.deleteShortUrl(code)
-      setLinks(prev => prev.filter(l => l.shortcode !== code))
+      setLinks(p => p.filter(l => l.shortcode !== code))
       toast('Link deleted', 'success')
     } catch {
       toast('Delete failed', 'error')
     }
   }
 
+  const now = new Date()
   const filtered = links.filter(l => {
-    const matchSearch = !search ||
-      l.shortcode.toLowerCase().includes(search.toLowerCase()) ||
-      l.original_url.toLowerCase().includes(search.toLowerCase()) ||
-      (l.title || '').toLowerCase().includes(search.toLowerCase())
-
-    const now = new Date()
+    const q = search.toLowerCase()
+    const matchSearch = !q ||
+      l.shortcode.toLowerCase().includes(q) ||
+      l.original_url.toLowerCase().includes(q) ||
+      (l.title || '').toLowerCase().includes(q)
     const expired = l.expires_at && new Date(l.expires_at) < now
     const matchFilter =
       filter === 'all' ||
       (filter === 'active' && !expired) ||
       (filter === 'expired' && expired) ||
       (filter === 'custom' && l.is_custom)
-
     return matchSearch && matchFilter
   })
 
-  const totalClicks = links.reduce((s, l) => s + (l.clicks || 0), 0)
-  const activeCount = links.filter(l => !l.expires_at || new Date(l.expires_at) > new Date()).length
-
   return (
-    <div className="container" style={{ paddingTop: 40, paddingBottom: 80 }}>
-      {/* Page header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
+    <div className="container" style={{ paddingTop: 40, paddingBottom: 100 }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex', alignItems: 'flex-start',
+        justifyContent: 'space-between',
+        marginBottom: 32, flexWrap: 'wrap', gap: 16,
+        animation: 'fade-up 0.4s ease both',
+      }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 32, letterSpacing: '-0.02em', marginBottom: 4 }}>
-            Dashboard
-          </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Manage and track all your short links</p>
+          <h1 style={{
+            fontSize: 32,
+            fontWeight: 800,
+            letterSpacing: '-0.04em',
+            marginBottom: 4,
+            color: 'var(--ink)',
+          }}>Dashboard</h1>
+          <p style={{ fontSize: 14, color: 'var(--ink-3)' }}>
+            Manage and track all your short links
+          </p>
         </div>
-        <button className="btn-primary" onClick={() => setShowCreate(!showCreate)} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {showCreate ? '✕ Close' : '+ New link'}
+        <button
+          className="btn btn-primary"
+          onClick={() => setShowCreate(v => !v)}
+          style={{ fontSize: 13, fontWeight: 600 }}
+        >
+          {showCreate ? '✕ Close' : (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                <path d="M6.5 1v11M1 6.5h11" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+              New link
+            </span>
+          )}
         </button>
       </div>
 
-      {/* Create form (collapsible) */}
+      {/* Create form */}
       {showCreate && (
         <div style={{
-          background: 'var(--bg-card)',
-          border: '1px solid rgba(180,255,60,0.2)',
-          borderRadius: 'var(--radius)',
-          padding: 28,
-          marginBottom: 28,
-          animation: 'fadeUp 0.3s ease',
-          maxWidth: 600,
+          background: 'rgba(11,14,25,0.8)',
+          border: '1px solid rgba(59,130,246,0.18)',
+          borderRadius: 16,
+          padding: 24,
+          marginBottom: 24,
+          animation: 'slide-down 0.25s var(--ease-out) both',
+          maxWidth: 580,
+          backdropFilter: 'blur(20px)',
+          boxShadow: '0 0 40px rgba(59,130,246,0.06)',
         }}>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, marginBottom: 20 }}>Create short link</h2>
-          <ShortenerForm toast={toast} onSuccess={(data) => {
-            fetchLinks()
-            setShowCreate(false)
-          }} />
+          <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 16, color: 'var(--ink-2)' }}>
+            Create short link
+          </p>
+          <ShortenerForm toast={toast} onSuccess={() => { fetchLinks(); setShowCreate(false) }} />
         </div>
       )}
 
       {/* Stats summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 28 }}>
-        {[
-          { label: 'Total links', value: links.length },
-          { label: 'Active links', value: activeCount },
-          { label: 'Total clicks', value: totalClicks.toLocaleString() },
-          { label: 'Custom aliases', value: links.filter(l => l.is_custom).length },
-        ].map(s => (
-          <div key={s.label} style={{
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-sm)',
-            padding: '16px 20px',
-          }}>
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{s.label}</p>
-            <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 26 }}>{s.value}</p>
-          </div>
-        ))}
-      </div>
+      {!loading && <StatSummary links={links} />}
 
       {/* Search + filter bar */}
-      <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
-        <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
-          <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: 14 }}>🔍</span>
+      <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ position: 'relative', flex: '1 1 220px' }}>
+          <div style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: 'var(--ink-3)', display: 'flex', pointerEvents: 'none' }}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.3"/>
+              <path d="M10 10l2.5 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+            </svg>
+          </div>
           <input
-            className="input-field"
-            placeholder="Search links..."
+            className="input"
+            placeholder="Search links…"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ paddingLeft: 36 }}
+            style={{ paddingLeft: 36, height: 38, fontSize: 13 }}
           />
         </div>
-        <div style={{ display: 'flex', gap: 4, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: 4 }}>
+
+        <div style={{
+          display: 'flex', gap: 2,
+          background: 'rgba(0,0,0,0.3)',
+          border: '1px solid var(--rim)',
+          borderRadius: 10,
+          padding: 3,
+        }}>
           {['all', 'active', 'expired', 'custom'].map(f => (
             <button key={f} onClick={() => setFilter(f)} style={{
-              background: filter === f ? 'var(--bg-elevated)' : 'transparent',
-              border: '1px solid ' + (filter === f ? 'var(--border)' : 'transparent'),
-              color: filter === f ? 'var(--text-primary)' : 'var(--text-secondary)',
-              borderRadius: 6,
-              padding: '6px 14px',
-              fontSize: 13,
+              background: filter === f ? 'var(--raised)' : 'transparent',
+              border: `1px solid ${filter === f ? 'var(--rim)' : 'transparent'}`,
+              color: filter === f ? 'var(--ink)' : 'var(--ink-3)',
+              padding: '5px 12px',
+              borderRadius: 7,
+              fontSize: 12,
+              fontWeight: 500,
               cursor: 'pointer',
               textTransform: 'capitalize',
-              transition: 'all 0.15s',
-            }}>
-              {f}
-            </button>
+              transition: 'all 0.12s',
+              fontFamily: 'var(--font-mono)',
+              letterSpacing: '0.02em',
+            }}>{f}</button>
           ))}
         </div>
-        <button onClick={fetchLinks} className="btn-ghost" style={{ padding: '8px 16px', fontSize: 13 }}>
-          ↻ Refresh
+
+        <button onClick={fetchLinks} className="btn btn-ghost btn-sm" style={{ height: 38 }}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M12 7A5 5 0 1 1 7 2a5 5 0 0 1 3.54 1.46L12 2v4H8l1.64-1.64A3 3 0 1 0 10 7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Refresh
         </button>
       </div>
 
       {/* Links list */}
       {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {[...Array(4)].map((_, i) => (
-            <div key={i} style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius)',
-              height: 76,
-              animation: 'pulse 1.5s ease infinite',
-            }} />
-          ))}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {[...Array(5)].map((_, i) => <SkeletonCard key={i} />)}
         </div>
       ) : filtered.length === 0 ? (
         <div style={{
           textAlign: 'center', padding: '80px 20px',
-          background: 'var(--bg-card)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius)',
+          background: 'rgba(255,255,255,0.015)',
+          border: '1px solid var(--rim)',
+          borderRadius: 20,
+          animation: 'fade-up 0.4s ease both',
         }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>✂</div>
-          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 18, marginBottom: 8 }}>
+          <div style={{ fontSize: 36, marginBottom: 14, opacity: 0.3 }}>✂</div>
+          <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 6, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
             {search || filter !== 'all' ? 'No matching links' : 'No links yet'}
           </p>
-          <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 24 }}>
-            {search || filter !== 'all' ? 'Try adjusting your filters' : 'Create your first short link to get started'}
+          <p style={{ color: 'var(--ink-3)', fontSize: 13, marginBottom: 24 }}>
+            {search || filter !== 'all' ? 'Try adjusting your search or filters' : 'Create your first short link to get started'}
           </p>
           {!search && filter === 'all' && (
-            <button className="btn-primary" onClick={() => setShowCreate(true)}>Create a link</button>
+            <button className="btn btn-primary btn-sm" onClick={() => setShowCreate(true)}>
+              Create a link
+            </button>
           )}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {filtered.map(link => (
-            <div key={link.shortcode} style={{ animation: 'fadeUp 0.3s ease' }}>
-              <LinkCard
+          {filtered.map((link, i) => (
+            <div key={link.shortcode} style={{ animationDelay: `${i * 0.04}s` }}>
+              <LinkRow
                 link={link}
                 host={host}
                 onStats={setSelectedCode}
@@ -348,15 +436,12 @@ export default function Dashboard({ toast }) {
               />
             </div>
           ))}
-          {filtered.length > 0 && (
-            <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-muted)', marginTop: 8 }}>
-              {filtered.length} link{filtered.length !== 1 ? 's' : ''}
-            </p>
-          )}
+          <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--ink-4)', marginTop: 8, fontFamily: 'var(--font-mono)' }}>
+            {filtered.length} link{filtered.length !== 1 ? 's' : ''}
+          </p>
         </div>
       )}
 
-      {/* Stats modal */}
       {selectedCode && (
         <StatsModal
           code={selectedCode}
