@@ -278,7 +278,7 @@ Contributions are welcome! Here's how to get started:
 
 ```bash
 # Fork the repo, then:
-git clone https://github.com/yourusername/snip.git
+git clone https://github.com/SamridhiiiGupta/SNIP-Short_links_that_work
 git checkout -b feature/your-feature-name
 
 # Make your changes, then:
