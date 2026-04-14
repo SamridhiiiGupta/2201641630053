@@ -22,7 +22,7 @@ Built with Node.js, React, and SQLite. Zero signup required.
 
 <br />
 
-[**View Live Demo**]([https://your-demo-link.com](https://snip-short-links-that-work-5m8t.onrender.com)) · [**GitHub Repo**](https://github.com/yourusername/snip) · [**Report Bug**](https://github.com/yourusername/snip/issues)
+[**View Live Demo**]([https://your-demo-link.com](https://snip-short-links-that-work-5m8t.onrender.com)) · [**GitHub Repo**]([https://github.com/yourusername/snip](https://github.com/SamridhiiiGupta/SNIP-Short_links_that_work)) · [**Report Bug**](https://github.com/yourusername/snip/issues)
 
 <br />
 
