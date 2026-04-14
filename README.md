@@ -36,7 +36,7 @@ Built with Node.js, React, and SQLite. Zero signup required.
 
 **Landing Page**
 
-![Snip Landing Page](./screenshots/home.png)
+![Snip Landing Page](screenshots/home.png.png)
 
 > Clean hero section with an instant URL shortener form, animated gradient background, and feature grid.
 
@@ -44,7 +44,7 @@ Built with Node.js, React, and SQLite. Zero signup required.
 
 **Dashboard**
 
-![Snip Dashboard](./screenshots/dashboard.png)
+![Snip Dashboard](screenshots/dashboard.png.png)
 
 > Full link management dashboard — search, filter, click tracking, and one-click analytics per link.
 
