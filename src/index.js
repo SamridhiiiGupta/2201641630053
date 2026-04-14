@@ -30,7 +30,7 @@ app.use('/', shortUrlsRouter);
 // Serve React frontend (production build)
 const distPath = path.join(__dirname, '..', 'frontend', 'dist');
 app.use(express.static(distPath));
-app.get('*', (req, res) => {
+app.get('(.*)', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'), (err) => {
     if (err) res.status(404).json({ message: 'Not found' });
   });
