@@ -121,7 +121,7 @@ Dashboard  →  GET /api/shorturls  →  List all links with click counts
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/yourusername/snip.git
+git clone https://github.com/SamridhiiiGupta/SNIP-Short_links_that_work
 cd snip
 ```
 
