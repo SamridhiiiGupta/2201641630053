@@ -1,267 +1,305 @@
-# ✂ Snip — URL Shortener
+<div align="center">
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Node.js-20.x-339933?style=flat-square&logo=node.js" />
-  <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react" />
-  <img src="https://img.shields.io/badge/SQLite-WAL-044a64?style=flat-square&logo=sqlite" />
-  <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" />
-</p>
+<br />
 
-A polished, production-ready URL shortener with a dark-themed React frontend, analytics dashboard, QR code generation, and a clean Express/SQLite backend.
+```
+  ✂  s n i p
+```
+
+# Snip — Short links that actually work.
+
+**A production-grade URL shortener with real-time analytics, custom aliases, QR codes, and link expiry controls.**  
+Built with Node.js, React, and SQLite. Zero signup required.
+
+<br />
+
+[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev)
+[![SQLite](https://img.shields.io/badge/SQLite-WAL-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://sqlite.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Production%20Ready-34d399?style=flat-square)]()
+
+<br />
+
+[**View Live Demo**](https://your-demo-link.com) · [**GitHub Repo**](https://github.com/yourusername/snip) · [**Report Bug**](https://github.com/yourusername/snip/issues)
+
+<br />
+
+</div>
 
 ---
 
-## Features
+## 📸 Preview
 
-- **Instant shortening** — nanoid-generated 6-char codes with collision retry
-- **Custom aliases** — choose your own shortcode (e.g. `/my-launch`)
-- **Link expiry** — set validity in minutes; expired links return 410
-- **Click analytics** — browser, device, OS, referer, and daily click charts
-- **QR code generation** — per-link QR codes, downloadable as PNG
-- **Click caps** — limit how many times a link can be used
-- **Dashboard** — search, filter, manage, and delete all links
-- **JSONL request logging** — every request logged to `logs/requests.log`
-- **Rate limiting** — 50 link creations per 15 minutes per IP
-- **Security headers** — `helmet`, CORS, strict body size limit
+<br />
+
+**Landing Page**
+
+![Snip Landing Page](./screenshots/home.png)
+
+> Clean hero section with an instant URL shortener form, animated gradient background, and feature grid.
+
+<br />
+
+**Dashboard**
+
+![Snip Dashboard](./screenshots/dashboard.png)
+
+> Full link management dashboard — search, filter, click tracking, and one-click analytics per link.
+
+<br />
 
 ---
 
-## Project Structure
+## ✨ Features
+
+### Core
+- ✂️ **Instant shortening** — Collision-resistant NanoID-based short codes generated in milliseconds
+- 🔗 **Custom aliases** — Choose your own slug for branded, memorable links (`/my-launch`)
+- ⏱️ **Link expiry** — Set links to auto-deactivate after N minutes
+- 🗑️ **Link deletion** — Full CRUD management from the dashboard
+
+### Analytics
+- 📊 **Click tracking** — Every redirect is logged with browser, device type, and referrer
+- 📈 **Daily click charts** — Area chart showing click trends over time (powered by Recharts)
+- 🌍 **Geo insights** — Country detection on each redirect event
+- 🥧 **Browser & device breakdown** — Pie chart + progress bars for device type distribution
+- 🕐 **Recent events log** — Live feed of the last N clicks with timestamps
+
+### Extras
+- 📱 **QR code generation** — Auto-generated, downloadable QR code for every short link
+- 📋 **One-click copy** — Instant clipboard copy with visual feedback
+- 🔍 **Search & filter** — Filter links by status: All / Active / Expired / Custom
+- 💀 **Skeleton loaders** — Smooth loading states on every async operation
+- 🔔 **Toast notifications** — Animated slide-in toasts with success / error / info states
+- 📐 **Fully responsive** — Works on mobile, tablet, and desktop
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | React 18, Vite, React Router v6 |
+| **Styling** | Pure CSS with custom design system (CSS variables, Geist font) |
+| **Charts** | Recharts (AreaChart, PieChart) |
+| **Backend** | Node.js, Express 5 |
+| **Database** | SQLite via `better-sqlite3` (WAL mode for concurrent reads) |
+| **ID Generation** | NanoID (collision-resistant 8-char IDs) |
+| **QR Codes** | `qrcode` npm package |
+| **Security** | Helmet.js, CORS, express-rate-limit |
+| **Logging** | Morgan HTTP logger |
+| **Dev tooling** | Nodemon, Concurrently |
+
+---
+
+## 🧠 How It Works
+
+```
+User pastes URL  →  POST /api/shorturls  →  NanoID generated  →  Saved to SQLite
+                                                                         │
+User visits /abc  →  GET /:code  →  Lookup in DB  →  Log analytics  →  302 Redirect
+                                                                         │
+Dashboard  →  GET /api/shorturls  →  List all links with click counts
+           →  GET /api/shorturls/:code/stats  →  Full analytics breakdown
+           →  GET /api/shorturls/:code/qr  →  Base64 QR code image
+```
+
+1. **Shortening** — A `POST` to `/api/shorturls` validates the URL, generates a NanoID (or uses your custom alias), stores it in SQLite, and returns the short link.
+2. **Redirection** — Any `GET /:code` request looks up the code, logs the click event (browser, device, country, referrer), and immediately redirects with a `302`.
+3. **Analytics** — The dashboard fetches per-link stats including daily aggregated clicks, browser/device breakdowns, and a raw event log.
+
+---
+
+## ⚙️ Installation & Setup
+
+### Prerequisites
+- Node.js `v18+`
+- npm `v9+`
+
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/yourusername/snip.git
+cd snip
+```
+
+### 2. Install all dependencies (root + frontend)
+
+```bash
+npm run setup
+```
+
+> This runs `npm install` in the root and `cd frontend && npm install` automatically.
+
+### 3. Configure environment
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env`:
+
+```env
+PORT=3000
+BASE_URL=http://localhost:3000
+NODE_ENV=development
+```
+
+### 4. Start the development server
+
+```bash
+npm run dev
+```
+
+This starts **both** the backend (port `3000`) and the frontend (port `5173`) concurrently, and automatically opens the browser.
+
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:5173 |
+| Backend API | http://localhost:3000/api |
+
+---
+
+## 🏗️ Project Structure
 
 ```
 snip/
-├── src/                        # Backend (Node.js / Express)
-│   ├── index.js                # App bootstrap + middleware
+├── src/
 │   ├── db/
-│   │   └── connection.js       # SQLite init, schema, indexes
+│   │   └── connection.js       # SQLite connection + schema init
+│   ├── middlewares/
+│   │   └── logger.js           # Morgan HTTP logger
 │   ├── routes/
-│   │   └── shorturls.js        # All API routes + redirect handler
-│   └── middlewares/
-│       └── logger.js           # JSONL request logger
-├── frontend/                   # Frontend (React + Vite)
+│   │   └── shorturls.js        # All /api/shorturls routes
+│   └── index.js                # Express app entry point
+│
+├── frontend/
 │   ├── src/
-│   │   ├── App.jsx             # Router root
-│   │   ├── pages/
-│   │   │   ├── Home.jsx        # Landing page + shortener form
-│   │   │   └── Dashboard.jsx   # Link management dashboard
 │   │   ├── components/
-│   │   │   ├── ShortenerForm.jsx
-│   │   │   ├── StatsModal.jsx  # Analytics overlay with charts
 │   │   │   ├── Navbar.jsx
+│   │   │   ├── ShortenerForm.jsx
+│   │   │   ├── StatsModal.jsx
 │   │   │   └── Toast.jsx
 │   │   ├── hooks/
 │   │   │   └── useToast.js
-│   │   └── lib/
-│   │       └── api.js          # API client
+│   │   ├── lib/
+│   │   │   └── api.js          # Typed API client
+│   │   ├── pages/
+│   │   │   ├── Home.jsx
+│   │   │   └── Dashboard.jsx
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   └── index.css           # Full design system
 │   ├── index.html
 │   └── vite.config.js
-├── package.json
-├── .gitignore
-└── README.md
+│
+├── db.sqlite                   # Auto-created on first run
+├── Dockerfile
+├── nginx.conf.example
+└── package.json
 ```
 
 ---
 
-## Quickstart (Development)
+## 🚀 Deployment
 
-### Prerequisites
-- Node.js 18+ 
-- npm 9+
-
-### 1. Install dependencies
+### Docker (Recommended)
 
 ```bash
-# Install backend deps
-npm install
-
-# Install frontend deps
-cd frontend && npm install && cd ..
-```
-
-### 2. Start in development mode
-
-Run backend and frontend in two terminals:
-
-**Terminal 1 — Backend:**
-```bash
-npm run dev
-# Server on http://localhost:3000
-```
-
-**Terminal 2 — Frontend (with hot reload):**
-```bash
-cd frontend && npm run dev
-# UI on http://localhost:5173 (proxies API to :3000)
-```
-
-### 3. Health check
-
-```
-GET http://localhost:3000/health
-→ { "status": "ok", "uptime": 12.3 }
-```
-
----
-
-## Production Build
-
-```bash
-# Build the React frontend
-cd frontend && npm run build && cd ..
-
-# Start the production server (serves built frontend + API)
-npm start
-# → http://localhost:3000
-```
-
----
-
-## API Reference
-
-### Create short URL
-```
-POST /api/shorturls
-Content-Type: application/json
-
-{
-  "url": "https://example.com",         // required
-  "shortcode": "my-link",               // optional, 3–20 chars
-  "validity": 1440,                     // optional, minutes
-  "title": "My landing page",           // optional
-  "maxClicks": 100                      // optional
-}
-
-201 Created
-{ "shortLink": "http://localhost:3000/abc123", "shortcode": "abc123", "expiry": "...", "createdAt": "..." }
-```
-
-### List all links
-```
-GET /api/shorturls
-→ Array of links with click counts
-```
-
-### Link analytics
-```
-GET /api/shorturls/:code/stats
-→ Total clicks, daily chart data, browser/device/country breakdowns, recent events
-```
-
-### QR code
-```
-GET /api/shorturls/:code/qr
-→ { "qr": "data:image/png;base64,..." }
-```
-
-### Delete link
-```
-DELETE /api/shorturls/:code
-→ { "message": "Deleted successfully" }
-```
-
-### Redirect
-```
-GET /:code
-→ 302 to original URL
-   404 if not found
-   410 if expired or click cap reached
-```
-
----
-
-## Error Codes
-
-| Status | Meaning |
-|-------:|---------|
-| 400 | Invalid URL or shortcode format |
-| 404 | Shortcode not found |
-| 409 | Custom shortcode already taken |
-| 410 | Expired or click limit reached |
-| 429 | Rate limit exceeded |
-
----
-
-## Deployment
-
-### Option A — Render (Free tier)
-
-1. Push to GitHub
-2. Create a new **Web Service** on [render.com](https://render.com)
-3. Set:
-   - **Build command**: `npm install && cd frontend && npm install && npm run build`
-   - **Start command**: `npm start`
-   - **Environment**: `PORT=10000`
-4. Deploy — Render gives you a free `*.onrender.com` domain
-
-### Option B — Railway
-
-```bash
-npm install -g railway
-railway login
-railway init
-railway up
-```
-
-### Option C — VPS / Self-hosted
-
-```bash
-# On your server
-git clone <your-repo>
-cd snip
-npm run setup         # installs all deps
-cd frontend && npm run build && cd ..
-PORT=3000 npm start
-
-# Use nginx as a reverse proxy (recommended)
-# See nginx.conf.example below
-```
-
-### Option D — Docker
-
-```bash
-# Build
 docker build -t snip .
-
-# Run
 docker run -p 3000:3000 -v $(pwd)/data:/app/data snip
 ```
 
-> The SQLite database (`db.sqlite`) and logs (`logs/`) are written to the project root. In production, mount these as persistent volumes or switch to PostgreSQL.
+### Manual (VPS / Cloud VM)
+
+```bash
+# Build frontend
+npm run build:frontend
+
+# Start production server
+NODE_ENV=production npm start
+```
+
+Then point Nginx to port `3000` using the included `nginx.conf.example`.
+
+### Vercel + Railway
+
+| Service | Platform |
+|---------|---------|
+| Frontend | [Vercel](https://vercel.com) — connect `/frontend` as root |
+| Backend + DB | [Railway](https://railway.app) — attach a persistent volume for SQLite |
+
+> **Tip:** For high-traffic production use, consider replacing SQLite with PostgreSQL and using a managed database like Supabase or Neon.
 
 ---
 
-## Environment Variables
+## 📊 API Reference
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `3000` | Server port |
-| `NODE_ENV` | `development` | Set to `production` in prod |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/shorturls` | Create a short link |
+| `GET` | `/api/shorturls` | List all short links |
+| `GET` | `/api/shorturls/:code/stats` | Get analytics for a link |
+| `GET` | `/api/shorturls/:code/qr` | Get QR code (base64 PNG) |
+| `DELETE` | `/api/shorturls/:code` | Delete a link |
+| `GET` | `/:code` | Redirect to original URL |
+| `GET` | `/health` | Health check |
 
----
-
-## Architecture Notes
-
-- **Stateless app layer** — all state lives in SQLite; easy to scale vertically
-- **WAL mode** — SQLite Write-Ahead Logging handles concurrent reads without blocking
-- **DB-enforced uniqueness** — `UNIQUE` constraint on `shortcode` prevents race conditions
-- **Prepared statements** — all queries use `better-sqlite3` prepared statements for safety and performance
-- **ESM nanoid interop** — dynamically imported to work within CommonJS runtime
-- **Rate limiting** — 50 requests per 15 min per IP on creation endpoint
-
----
-
-## Roadmap
-
-- [ ] Password-protected links
-- [ ] Bulk CSV import/export  
-- [ ] OpenAPI/Swagger docs
-- [ ] Webhook on click
-- [ ] Postgres migration guide
-- [ ] Redis cache for hot shortcodes
-- [ ] Docker Compose + nginx example
+**Create short link — request body:**
+```json
+{
+  "url": "https://example.com/very/long/path",
+  "shortcode": "my-link",
+  "validity": 1440,
+  "title": "My link label"
+}
+```
 
 ---
 
-## License
+## 🔮 Roadmap
 
-MIT — built with care for reliability and clarity.
+- [ ] **Authentication** — User accounts with private link collections
+- [ ] **Link passwords** — Password-protect any short link
+- [ ] **Bulk import** — CSV upload to shorten many URLs at once
+- [ ] **Click maps** — Visual geo heatmap of click origins
+- [ ] **API keys** — Programmatic access for developers
+- [ ] **Teams** — Shared workspaces and link collaboration
+- [ ] **Custom domains** — Use your own domain for short links
+- [ ] **PostgreSQL support** — For larger deployments beyond SQLite
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how to get started:
+
+```bash
+# Fork the repo, then:
+git clone https://github.com/yourusername/snip.git
+git checkout -b feature/your-feature-name
+
+# Make your changes, then:
+git commit -m "feat: add your feature"
+git push origin feature/your-feature-name
+# Open a Pull Request
+```
+
+Please follow the existing code style and include a clear PR description.
+
+---
+
+## 📄 License
+
+MIT License — see [LICENSE](LICENSE) for details.
+
+---
+
+<div align="center">
+
+Built with ☕ and care.  
+If you found this useful, consider giving it a ⭐ on GitHub.
+
+</div>
