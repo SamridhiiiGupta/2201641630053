@@ -13,6 +13,10 @@ function timeAgo(iso) {
   return `${Math.floor(hrs / 24)}d ago`
 }
 
+function getFavicon(url) {
+  try { return new URL(url).hostname } catch { return '' }
+}
+
 function LinkCard({ link, onStats, onDelete, host }) {
   const shortUrl = `${host}/${link.shortcode}`
   const isExpired = link.expires_at && new Date(link.expires_at) < new Date()
@@ -53,7 +57,7 @@ function LinkCard({ link, onStats, onDelete, host }) {
           fontSize: 18, overflow: 'hidden',
         }}>
           <img
-            src={`https://www.google.com/s2/favicons?domain=${(() => { try { return new URL(link.original_url).hostname } catch { return '' } }())}&sz=32`}
+            src={`https://www.google.com/s2/favicons?domain=${getFavicon(link.original_url)}&sz=32`}
             alt="" width={20} height={20}
             onError={e => { e.target.style.display = 'none' }}
           />
