@@ -291,12 +291,6 @@ Please follow the existing code style and include a clear PR description.
 
 ---
 
-## 📄 License
-
-MIT License — see [LICENSE](LICENSE) for details.
-
----
-
 <div align="center">
 
 Built with ☕ and care.  
